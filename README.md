@@ -2,6 +2,10 @@
 
 Typescript MongoDB client library.
 
+- [x] Document schema
+- [x] Multiple connections
+- [x] Typings
+
 ## Example
 
 ```js
