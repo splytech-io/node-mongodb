@@ -1,0 +1,55 @@
+{
+  "name": "@splytech-io/mongodb",
+  "version": "1.0.0",
+  "description": "Splyt MongoDB Client",
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "dependencies": {
+    "@types/mongodb": "^3.0.8",
+    "mongodb": "^3.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^9.4.7",
+    "tslint": "^5.9.1",
+    "tslint-eslint-rules": "^5.1.0",
+    "typescript": "^2.7.2"
+  },
+  "scripts": {
+    "lint": "tslint --project .",
+    "lint:fix": "tslint --project . --fix",
+    "build": "tsc",
+    "prepublish": "npm run lint && npm run build"
+  },
+  "keywords": [
+    "mongodb"
+  ],
+  "author": "Andrius Skerla",
+  "license": "ISC",
+  "nodemonConfig": {
+    "restartable": "rs",
+    "ignore": [
+      ".git",
+      "node_modules/**/node_modules"
+    ],
+    "verbose": true,
+    "execMap": {
+      "ts": "node_modules/.bin/ts-node"
+    },
+    "watch": [
+      "examples/*.ts",
+      "index.ts"
+    ],
+    "ext": "ts"
+  },
+  "directories": {
+    "example": "examples"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/splytech-io/node-mongodb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/splytech-io/node-mongodb/issues"
+  },
+  "homepage": "https://github.com/splytech-io/node-mongodb#readme"
+}
