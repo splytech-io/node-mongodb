@@ -8,8 +8,8 @@ Typescript MongoDB client library.
 
 ## Example
 
-```js
-import { MongoDB } from '../index';
+```typescript
+import { MongoDB } from '@splytech-io/mongodb';
 
 interface Schema {
   name: string;
