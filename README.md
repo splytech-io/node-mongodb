@@ -5,29 +5,28 @@ Typescript MongoDB client library.
 ## Example
 
 ```js
-import { MongoDB } from '@splytech-io/mongodb';
-import connection = MongoDB.connection;
+import { MongoDB } from '../index';
 
 interface Schema {
   name: string;
 }
 
-const User = connection.createCollection<Schema>({
+const User = MongoDB.connection.createCollection<Schema>({
   collectionName: 'users',
 });
 
 async function main() {
-  await connection.open('mongodb://127.0.0.1/test');
+  await MongoDB.connection.open('mongodb://127.0.0.1/test');
 
   const user = await User.findOne({});
 
   if (!user) {
     throw new Error('user not found');
   }
-  
+
   console.log(user.name);
 
-  await connection.close();
+  await MongoDB.connection.close();
 }
 
 main().catch((e) => {
