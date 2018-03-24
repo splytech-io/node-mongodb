@@ -1,10 +1,8 @@
 import * as mongodb from 'mongodb';
 
 export namespace MongoDB {
-
-  export interface Collection<T = any> extends mongodb.Collection<T> {
-
-  }
+  export type Collection<T = any> = mongodb.Collection<T>;
+  export type UpdateWriteOpResult = mongodb.UpdateWriteOpResult;
 
   interface CollectionIndex {
     collection: Collection;
