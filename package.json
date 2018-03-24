@@ -1,6 +1,6 @@
 {
   "name": "@splytech-io/mongodb",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Splyt MongoDB Client",
   "main": "index.js",
   "typings": "index.d.ts",

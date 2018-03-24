@@ -1,6 +1,10 @@
-import { Collection, Db, DbCollectionOptions, IndexOptions, MongoClient, MongoClientOptions } from 'mongodb';
+import * as mongodb from 'mongodb';
 
 export namespace MongoDB {
+
+  export interface Collection<T = any> extends mongodb.Collection<T> {
+
+  }
 
   interface CollectionIndex {
     collection: Collection;
@@ -9,12 +13,12 @@ export namespace MongoDB {
 
   export interface Index {
     spec: { [key: string]: -1 | 1 };
-    options?: IndexOptions;
+    options?: mongodb.IndexOptions;
   }
 
   export interface CollectionOptions {
     collectionName: string;
-    collectionOptions?: DbCollectionOptions;
+    collectionOptions?: mongodb.DbCollectionOptions;
     indexes?: Index[];
   }
 
@@ -22,8 +26,8 @@ export namespace MongoDB {
    *
    */
   export class Connection {
-    private client?: MongoClient;
-    private db?: Db;
+    private client?: mongodb.MongoClient;
+    private db?: mongodb.Db;
     private collections: { [key: string]: Collection } = {};
     private indexes: CollectionIndex[] = [];
 
@@ -31,22 +35,22 @@ export namespace MongoDB {
      * Connects to the mongodb and creates indexes
      *
      * @param {string} url
-     * @param {MongoClientOptions} options
+     * @param {mongodb.MongoClientOptions} options
      * @returns {Promise<void>}
      */
-    async open(url: string, options?: MongoClientOptions): Promise<void> {
+    async open(url: string, options?: mongodb.MongoClientOptions): Promise<void> {
       if (this.client) {
         throw new Error('Already connected');
       }
 
-      await MongoClient.connect(url, Object.assign({
+      await mongodb.MongoClient.connect(url, Object.assign({
         autoReconnect: true,
         reconnectTries: Infinity,
         connectTimeoutMS: 5000,
         native_parser: true,
         ignoreUndefined: true,
         validateOptions: true,
-      }, options)).then((mongoClient: MongoClient) => {
+      }, options)).then((mongoClient: mongodb.MongoClient) => {
         this.client = mongoClient;
         this.db = mongoClient.db();
       });
@@ -171,10 +175,10 @@ export namespace MongoDB {
     /**
      *
      * @param {string} name
-     * @param {DbCollectionOptions} options
+     * @param {mongodb.DbCollectionOptions} options
      * @returns {Collection}
      */
-    private getCollection(name: string, options?: DbCollectionOptions): Collection {
+    private getCollection(name: string, options?: mongodb.DbCollectionOptions): Collection {
       if (!this.db) {
         throw new Error('not connected');
       }
