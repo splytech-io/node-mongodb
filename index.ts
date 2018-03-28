@@ -285,7 +285,7 @@ export namespace MongoDB {
   }
 
   export interface Index {
-    spec: { [key: string]: -1 | 1 };
+    spec: { [key: string]: -1 | 1 | '2dsphere' | 'text' | '2d' | 'geoHaystack' | 'hashed' };
     options?: mongodb.IndexOptions;
   }
 
@@ -325,7 +325,9 @@ export namespace MongoDB {
         validateOptions: true,
       }, options)).then((mongoClient: mongodb.MongoClient) => {
         this.client = mongoClient;
-        this.db = mongoClient.db();
+
+        // TODO: wait for mongodb types to be fixes. v3.0.8 contains `.find(filter: T): T[]` bug
+        this.db = (<any>mongoClient).db();
       });
 
       await Promise.all(this.indexes.map(async (item: CollectionIndex) => {
