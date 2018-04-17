@@ -331,7 +331,11 @@ export namespace MongoDB {
       });
 
       await Promise.all(this.indexes.map(async (item: CollectionIndex) => {
-        return item.collection.createIndex(item.index.spec, item.index.options);
+        return item.collection.createIndex(item.index.spec, item.index.options).catch((e) => {
+          throw Object.assign(e, {
+            index: item.index,
+          });
+        });
       }));
     }
 
