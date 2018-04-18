@@ -332,9 +332,9 @@ export namespace MongoDB {
 
       await Promise.all(this.indexes.map(async (item: CollectionIndex) => {
         return item.collection.createIndex(item.index.spec, item.index.options).catch((e) => {
-          throw Object.assign(new Error(`An error occurred while creating an index: ${e.message}`), {
-            index: item.index,
-          });
+          const spec = JSON.stringify(item.index);
+
+          throw new Error(`An error occurred while creating an index: ${e.message}; ${spec}`);
         });
       }));
     }
