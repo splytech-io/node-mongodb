@@ -1,6 +1,6 @@
 {
   "name": "@splytech-io/mongodb",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Splyt MongoDB Client",
   "main": "index.js",
   "typings": "index.d.ts",
@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "@types/node": "^9.4.7",
+    "husky": "^0.14.3",
     "tslint": "^5.9.1",
     "tslint-eslint-rules": "^5.1.0",
     "typescript": "^2.7.2"
@@ -18,13 +19,14 @@
     "lint": "tslint --project .",
     "lint:fix": "tslint --project . --fix",
     "build": "tsc",
-    "prepublish": "npm run lint && npm run build"
+    "prepublishOnly": "npm run lint && npm run build",
+    "prepush": "npm run lint"
   },
   "keywords": [
     "mongodb"
   ],
   "author": "Andrius Skerla",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "nodemonConfig": {
     "restartable": "rs",
     "ignore": [
