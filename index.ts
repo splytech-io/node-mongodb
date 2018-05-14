@@ -435,7 +435,7 @@ export namespace MongoDB {
             return async () => Promise.reject(new Error('not connected'));
           }
 
-          return (<any>this.getCollection(collectionName, collectionOptions))[name];
+          return (...args: any[]) => (<any>this.getCollection(collectionName, collectionOptions))[name](...args);
         },
       });
 
