@@ -330,6 +330,14 @@ export namespace MongoDB {
         this.db = (<any>mongoClient).db();
       });
 
+      await this.ensureIndexes();
+    }
+
+    /**
+     *
+     * @returns {Promise<void>}
+     */
+    async ensureIndexes() {
       await Promise.all(this.indexes.map(async (item: CollectionIndex) => {
         return item.collection.createIndex(item.index.spec, item.index.options).catch((e) => {
           const spec = JSON.stringify(item.index);
