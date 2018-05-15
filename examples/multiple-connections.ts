@@ -1,4 +1,4 @@
-import { MongoDB } from '../index';
+import { MongoDB } from '../src/index';
 
 const db1 = new MongoDB.Connection();
 const db2 = new MongoDB.Connection();

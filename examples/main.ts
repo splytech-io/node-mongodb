@@ -1,4 +1,4 @@
-import { MongoDB } from '../index';
+import { MongoDB } from '../src/index';
 
 interface Schema {
   name: string;

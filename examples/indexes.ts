@@ -1,4 +1,4 @@
-import { MongoDB } from '../index';
+import { MongoDB } from '../src/index';
 import connection = MongoDB.connection;
 
 interface Schema {

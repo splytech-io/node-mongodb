@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "ES2017",
     "module": "commonjs",
+    "outDir": "build",
     "declaration": true,
     "sourceMap": true,
     "strict": true,
@@ -17,8 +18,7 @@
     "moduleResolution": "node",
     "baseUrl": "./"
   },
-  "exclude": [
-    "node_modules",
-    "examples"
+  "include": [
+    "src/**/*.ts"
   ]
 }

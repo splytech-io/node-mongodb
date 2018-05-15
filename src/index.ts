@@ -1,7 +1,6 @@
 import * as mongodb from 'mongodb';
 
 export namespace MongoDB {
-  export type Collection<T = any> = mongodb.Collection<T>;
   export type UpdateWriteOpResult = mongodb.UpdateWriteOpResult;
   export const MongoError = mongodb.MongoError;
 
@@ -295,6 +294,17 @@ export namespace MongoDB {
     indexes?: Index[];
   }
 
+  /* tslint:disable:max-line-length */
+  export interface Collection<T = any> extends mongodb.Collection<T> {
+    insertOne(docs: T, callback: mongodb.MongoCallback<mongodb.InsertOneWriteOpResult>): void;
+    insertOne(docs: T, options?: mongodb.CollectionInsertOneOptions): Promise<mongodb.InsertOneWriteOpResult>;
+    insertOne(docs: T, options: mongodb.CollectionInsertOneOptions, callback: mongodb.MongoCallback<mongodb.InsertOneWriteOpResult>): void;
+
+    insertMany(docs: T[], callback: mongodb.MongoCallback<mongodb.InsertWriteOpResult>): void;
+    insertMany(docs: T[], options?: mongodb.CollectionInsertManyOptions): Promise<mongodb.InsertWriteOpResult>;
+    insertMany(docs: T[], options: mongodb.CollectionInsertManyOptions, callback: mongodb.MongoCallback<mongodb.InsertWriteOpResult>): void;
+  }
+
   /**
    *
    */
@@ -325,9 +335,7 @@ export namespace MongoDB {
         validateOptions: true,
       }, options)).then((mongoClient: mongodb.MongoClient) => {
         this.client = mongoClient;
-
-        // TODO: wait for mongodb types to be fixes. v3.0.8 contains `.find(filter: T): T[]` bug
-        this.db = (<any>mongoClient).db();
+        this.db = mongoClient.db();
       });
 
       await this.ensureIndexes();
