@@ -16,7 +16,7 @@ const collection = MongoDB.connection.createCollection<Schema>({
 describe('mongodb', () => {
 
   before(async () => {
-    await MongoDB.connection.open('mongodb://127.0.0.1/mongodb-test');
+    await MongoDB.connection.open('mongodb://127.0.0.1:27017/mongodb-test');
   });
 
   after(async () => {
@@ -80,5 +80,78 @@ describe('mongodb', () => {
     for (const record of records) {
       expect(record.surname).to.be.a('string');
     }
+  });
+
+  it('should ignore undefined values', async () => {
+    await collection.deleteMany({});
+    const r = await collection.updateOne({}, {
+      $set: {
+        shouldBeMissing: undefined,
+        shouldBeNull: null,
+        visible: true,
+      },
+    }, {
+      upsert: true,
+    });
+
+    const record = await collection.findOne({});
+
+    expect(record).to.deep.equals({
+      _id: r.upsertedId._id,
+      shouldBeNull: null,
+      visible: true,
+    });
+  });
+
+  it('should return collectionName', async () => {
+    expect(collection.collectionName).to.equals('tests');
+  });
+
+  describe('transactions', () => {
+    it('should support transactions', async () => {
+      const client = MongoDB.connection.getClient();
+      const session = client.startSession();
+
+      expect((<any>session).startTransaction).to.be.an('function');
+    });
+
+    it('should not create docs in the db if transaction was aborted', async () => {
+      const client = MongoDB.connection.getClient();
+      const session = client.startSession();
+
+      const one = client.db('test').collection('one');
+      const two = client.db('test').collection('two');
+
+      await one.deleteMany({});
+      await two.deleteMany({});
+
+      (<any>session).startTransaction({});
+
+      await one.insertOne({ test: true }, { session });
+      await two.insertOne({ test: false }, { session });
+
+      await (<any>session).abortTransaction();
+
+      await client.db('test').collection('one').estimatedDocumentCount().then((r) => {
+        expect(r).to.equals(0);
+      });
+
+      await client.db('test').collection('two').estimatedDocumentCount().then((r) => {
+        expect(r).to.equals(0);
+      });
+    });
+
+    it('should throw if not connected', async () => {
+      const connection = new MongoDB.Connection();
+      const collection = connection.createCollection({
+        collectionName: 'test2',
+      });
+
+      try {
+        await collection.findOne({});
+      } catch (e) {
+        expect(e.message).to.match(/not connected/);
+      }
+    });
   });
 });

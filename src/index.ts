@@ -2,6 +2,15 @@ import * as mongodb from 'mongodb';
 
 export namespace MongoDB {
   export type UpdateWriteOpResult = mongodb.UpdateWriteOpResult;
+  export type ReplaceOneOptions = mongodb.ReplaceOneOptions;
+  export type InsertOneWriteOpResult = mongodb.InsertOneWriteOpResult;
+  export type CollectionInsertOneOptions = mongodb.CollectionInsertOneOptions;
+  export type InsertWriteOpResult = mongodb.InsertWriteOpResult;
+  export type FindOneOptions = mongodb.FindOneOptions;
+  export type FindOperatorsUnordered = mongodb.FindOperatorsUnordered;
+  export type UnorderedBulkOperation = mongodb.UnorderedBulkOperation;
+  export type FindOperatorsOrdered = mongodb.FindOperatorsOrdered;
+  export type BulkWriteResult = mongodb.BulkWriteResult;
   export const MongoError = mongodb.MongoError;
 
   export namespace Code {
@@ -297,12 +306,24 @@ export namespace MongoDB {
   /* tslint:disable:max-line-length */
   export interface Collection<T = any> extends mongodb.Collection<T> {
     insertOne(docs: T, callback: mongodb.MongoCallback<mongodb.InsertOneWriteOpResult>): void;
+
     insertOne(docs: T, options?: mongodb.CollectionInsertOneOptions): Promise<mongodb.InsertOneWriteOpResult>;
-    insertOne(docs: T, options: mongodb.CollectionInsertOneOptions, callback: mongodb.MongoCallback<mongodb.InsertOneWriteOpResult>): void;
+
+    insertOne(
+      docs: T,
+      options: mongodb.CollectionInsertOneOptions,
+      callback: mongodb.MongoCallback<mongodb.InsertOneWriteOpResult>,
+    ): void;
 
     insertMany(docs: T[], callback: mongodb.MongoCallback<mongodb.InsertWriteOpResult>): void;
+
     insertMany(docs: T[], options?: mongodb.CollectionInsertManyOptions): Promise<mongodb.InsertWriteOpResult>;
-    insertMany(docs: T[], options: mongodb.CollectionInsertManyOptions, callback: mongodb.MongoCallback<mongodb.InsertWriteOpResult>): void;
+
+    insertMany(
+      docs: T[],
+      options: mongodb.CollectionInsertManyOptions,
+      callback: mongodb.MongoCallback<mongodb.InsertWriteOpResult>,
+    ): void;
   }
 
   /**
@@ -333,6 +354,8 @@ export namespace MongoDB {
         native_parser: true,
         ignoreUndefined: true,
         validateOptions: true,
+        useNewUrlParser: true,
+        appname: process.env.APP,
       }, options)).then((mongoClient: mongodb.MongoClient) => {
         this.client = mongoClient;
         this.db = mongoClient.db();
@@ -370,6 +393,18 @@ export namespace MongoDB {
       this.client = undefined;
       this.db = undefined;
       this.collections = {};
+    }
+
+    /**
+     *
+     * @returns {MongoClient}
+     */
+    getClient(): mongodb.MongoClient {
+      if (!this.client) {
+        throw new Error('Not connected');
+      }
+
+      return this.client;
     }
 
     /**
@@ -447,11 +482,13 @@ export namespace MongoDB {
          * @returns {any}
          */
         get: (_, name) => {
-          if (!this.db) {
-            return async () => Promise.reject(new Error('not connected'));
+          const collection = <any>this.getCollection(collectionName, collectionOptions);
+
+          if (typeof collection[name] === 'function') {
+            return (...args: any[]) => collection[name](...args);
           }
 
-          return (...args: any[]) => (<any>this.getCollection(collectionName, collectionOptions))[name](...args);
+          return collection[name];
         },
       });
 
