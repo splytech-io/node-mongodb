@@ -16,7 +16,7 @@ const collection = MongoDB.connection.createCollection<Schema>({
 describe('mongodb', () => {
 
   before(async () => {
-    await MongoDB.connection.open('mongodb://127.0.0.1:27017/mongodb-test');
+    await MongoDB.connection.open('mongodb://127.0.0.1:27017/mongodb-test?retryWrites=true');
   });
 
   after(async () => {
@@ -54,6 +54,10 @@ describe('mongodb', () => {
 
     while (await cursor.hasNext()) {
       const record = await cursor.next();
+
+      if (!record) {
+        throw new Error('no record');
+      }
 
       expect(record.name).to.equals('andy');
     }
@@ -119,13 +123,16 @@ describe('mongodb', () => {
       const client = MongoDB.connection.getClient();
       const session = client.startSession();
 
+      await client.db('test').createCollection('one');
+      await client.db('test').createCollection('two');
+
       const one = client.db('test').collection('one');
       const two = client.db('test').collection('two');
 
       await one.deleteMany({});
       await two.deleteMany({});
 
-      (<any>session).startTransaction({});
+      session.startTransaction({});
 
       await one.insertOne({ test: true }, { session });
       await two.insertOne({ test: false }, { session });
@@ -152,6 +159,17 @@ describe('mongodb', () => {
       } catch (e) {
         expect(e.message).to.match(/not connected/);
       }
+    });
+
+    it('should create indexes', async () => {
+      await collection.createIndex({
+        poi: 1,
+      }, {
+        name: 'test',
+        unique: true,
+      });
+
+      await collection.dropIndex('test');
     });
   });
 });
