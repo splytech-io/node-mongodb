@@ -16,7 +16,7 @@ const collection = MongoDB.connection.createCollection<Schema>({
 describe('mongodb', () => {
 
   before(async () => {
-    await MongoDB.connection.open('mongodb://127.0.0.1:27017/mongodb-test?retryWrites=true');
+    await MongoDB.connection.open('mongodb://127.0.0.1:27017/mongodb-test?retryWrites=true&authSource=mognodb-test2');
   });
 
   after(async () => {

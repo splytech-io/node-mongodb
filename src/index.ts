@@ -357,8 +357,12 @@ export namespace MongoDB {
         useNewUrlParser: true,
         appname: process.env.APP,
       }, options)).then((mongoClient: mongodb.MongoClient) => {
+        const urlParsed = new URL(url);
+
         this.client = mongoClient;
-        this.db = mongoClient.db();
+
+        // fix nasty mongodb driver bug when authSource is used as target db name
+        this.db = mongoClient.db(urlParsed.pathname.substr(1) || undefined);
       });
 
       await this.ensureIndexes();
