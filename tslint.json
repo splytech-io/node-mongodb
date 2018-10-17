@@ -59,7 +59,7 @@
       120
     ],
     "max-classes-per-file": [
-      true,
+      false,
       1,
       "exclude-class-expressions"
     ],

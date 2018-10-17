@@ -33,6 +33,22 @@ describe('mongodb', () => {
     await collection.deleteMany({});
   });
 
+  it('should connect to the right database', async () => {
+    const connection = new MongoDB.Connection();
+
+    await connection.open('mongodb://127.0.0.1:27017/mongodb-test-2?retryWrites=true&authSource=mognodb-test-3');
+    await connection.getClient().db('mongodb-test-2').dropDatabase();
+    await connection.getClient().db('mongodb-test-3').dropDatabase();
+    await connection.createCollection({ collectionName: 'test' }).insertOne({});
+
+    await connection.getClient().db('mongodb-test-2').collection('test').countDocuments().then((count) => {
+      expect(count).to.equals(1);
+    });
+    await connection.getClient().db('mongodb-test-3').collection('test').countDocuments().then((count) => {
+      expect(count).to.equals(0);
+    });
+  });
+
   it('should findOne', async () => {
     await collection.findOne({}).then((r) => {
       if (!r) {

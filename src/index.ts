@@ -1,3 +1,4 @@
+import { ObjectID as MongoDBObjectID } from 'mongodb';
 import * as mongodb from 'mongodb';
 
 export namespace MongoDB {
@@ -286,6 +287,9 @@ export namespace MongoDB {
     export const DATABASE_DIFFER_CASE = 13297;
     export const OBSOLETE_PREPARE_CONFIGS_FAILED = 13104;
   }
+
+  export class ObjectId extends MongoDBObjectID {}
+  export class ObjectID extends MongoDBObjectID {}
 
   interface CollectionIndex {
     collection: Collection;
