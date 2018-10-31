@@ -12,6 +12,7 @@ export namespace MongoDB {
   export type UnorderedBulkOperation = mongodb.UnorderedBulkOperation;
   export type FindOperatorsOrdered = mongodb.FindOperatorsOrdered;
   export type BulkWriteResult = mongodb.BulkWriteResult;
+  export type ClientSession = mongodb.ClientSession;
   export const MongoError = mongodb.MongoError;
 
   export namespace Code {
