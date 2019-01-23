@@ -1,5 +1,7 @@
-import { ObjectID as MongoDBObjectID } from 'mongodb';
 import * as mongodb from 'mongodb';
+import { ObjectID as MongoDBObjectID } from 'mongodb';
+
+export { mongodb };
 
 export namespace MongoDB {
   export type UpdateWriteOpResult = mongodb.UpdateWriteOpResult;
@@ -14,6 +16,8 @@ export namespace MongoDB {
   export type BulkWriteResult = mongodb.BulkWriteResult;
   export type ClientSession = mongodb.ClientSession;
   export const MongoError = mongodb.MongoError;
+  export const AggregationCursor = mongodb.AggregationCursor;
+  export const native = mongodb;
 
   export namespace Code {
     /* tslint:disable no-unused-variables */
@@ -289,8 +293,11 @@ export namespace MongoDB {
     export const OBSOLETE_PREPARE_CONFIGS_FAILED = 13104;
   }
 
-  export class ObjectId extends MongoDBObjectID {}
-  export class ObjectID extends MongoDBObjectID {}
+  export class ObjectId extends MongoDBObjectID {
+  }
+
+  export class ObjectID extends MongoDBObjectID {
+  }
 
   interface CollectionIndex {
     collection: Collection;
@@ -378,7 +385,7 @@ export namespace MongoDB {
         return item.collection.createIndex(item.index.spec, item.index.options).catch((e) => {
           const spec = JSON.stringify(item.index);
 
-          throw new Error(`An error occurred while creating an index: ${e.message}; ${spec}`);
+          throw new Error(`An error occurred while creating an index: ${ e.message }; ${ spec }`);
         });
       }));
     }
