@@ -130,7 +130,6 @@
     "no-return-await": true,
     "no-unnecessary-class": true,
     "no-this-assignment": true,
-    "no-parameter-properties": true,
     "number-literal-format": true,
     "object-curly-spacing": [
       true,
