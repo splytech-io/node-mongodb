@@ -1,4 +1,3 @@
-
 export interface DocumentMap<T> {
   set(key: string, value: T): this;
 
