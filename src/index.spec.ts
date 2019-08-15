@@ -3,6 +3,11 @@ import { MongoDB } from './index';
 
 interface Schema {
   name: string;
+  regions?: string[];
+  geometry?: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
 }
 
 interface Schema2 {
@@ -186,6 +191,25 @@ describe('mongodb', () => {
       });
 
       await collection.dropIndex('test');
+    });
+  });
+
+  describe('interfaces', () => {
+    it('should search by element', async () => {
+      if (!global) {
+        await collection.findOne({
+          regions: 'one',
+          geometry: {
+            $geoNear: {
+              $maxDistance: 50000,
+              $geometry: {
+                type: 'Point',
+                coordinates: [0, 1],
+              },
+            },
+          },
+        });
+      }
     });
   });
 });
