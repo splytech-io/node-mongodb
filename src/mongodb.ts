@@ -345,6 +345,7 @@ export class Connection {
       ignoreUndefined: true,
       validateOptions: true,
       useNewUrlParser: true,
+      useUnifiedTopology: true,
       appname: process.env.APP,
     }, options)).then((mongoClient: native.MongoClient) => {
       this.client = mongoClient;
