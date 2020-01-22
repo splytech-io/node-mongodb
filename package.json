@@ -47,8 +47,7 @@
   },
   "lint-staged": {
     "*.ts": [
-      "tslint -p . --fix",
-      "git add"
+      "tslint -p . --fix"
     ]
   },
   "author": "Andrius Skerla",
