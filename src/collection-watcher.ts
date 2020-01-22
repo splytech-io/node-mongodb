@@ -23,7 +23,7 @@ type CallbackParams<T> = {
 
 export class CollectionWatcher<T> {
   constructor(
-    private readonly collection: Collection<any>,
+    private readonly collection: Collection<T>,
     private readonly cb: (params: CallbackParams<T>) => void,
   ) {
 

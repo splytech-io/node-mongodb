@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "es6",
+    "lib": [
+      "esnext"
+    ],
     "module": "commonjs",
     "outDir": "build",
     "declaration": true,
@@ -15,8 +18,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "node",
-    "baseUrl": "./"
+    "moduleResolution": "node"
   },
   "include": [
     "src/**/*.ts"
