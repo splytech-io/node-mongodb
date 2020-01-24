@@ -92,7 +92,7 @@ export class CollectionInsertStream<T extends { _id: MongoDB.ObjectID }> {
   async findAndTail(
     filter: FilterQuery<T>,
     callback: (doc: T) => Promise<void> | void,
-  ): Promise<{ stop: () => void }> {
+  ): Promise<{ stop: () => void; info: { initialLoad: number; duplicates: number } }> {
     const stack: Array<T> = [];
     let readyToSend = false;
 
@@ -116,11 +116,19 @@ export class CollectionInsertStream<T extends { _id: MongoDB.ObjectID }> {
       setImmediate(flushStack);
     });
 
-    await this.collection.find(filter).toArray().then((records) => {
+    const info = await this.collection.find(filter).toArray().then((records) => {
+      const result = {
+        duplicates: 0,
+        initialLoad: 0,
+      };
+
       // - remove duplicates
       records.forEach((item1) => {
+        result.initialLoad++;
         if (stack.every((item2) => !item2._id.equals(item1._id))) {
           stack.push(item1);
+        } else {
+          result.duplicates++;
         }
       });
       // - put all messages in the order
@@ -130,9 +138,12 @@ export class CollectionInsertStream<T extends { _id: MongoDB.ObjectID }> {
 
       readyToSend = true;
       flushStack();
+
+      return result;
     });
 
     return {
+      info,
       stop: () => {
         readyToSend = false;
         subscription.unsubscribe();
@@ -167,8 +178,12 @@ export class CollectionInsertStream<T extends { _id: MongoDB.ObjectID }> {
       resumeAfter: this.cursor,
     }).stream();
 
+    if (this.readPreference) {
+      this.stream.setReadPreference(this.readPreference);
+    }
+
     this.stream.pipe(Utils.callbackStream<InsertStreamItem<T>>(this.deliver.bind(this)));
-    this.stream.on('error', console.error.bind(console, this.constructor.name));
+    this.stream.on('error', () => null);
     this.stream.on('close', () => {
       if (this.status === 'started') {
         setTimeout(() => this.initStream(), 500);
