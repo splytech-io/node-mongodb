@@ -4,11 +4,11 @@ import { MongoDB } from './index';
 import { ReadPreference, Timestamp } from './mongodb';
 import { matchesFilter, throttle } from './utils';
 
-interface ResumeToken {
+export interface ResumeToken {
   _data: string;
 }
 
-interface InsertStreamItem<T> {
+export interface InsertStreamItem<T> {
   _id: ResumeToken;
   operationType: 'insert';
   clusterTime: Timestamp;
