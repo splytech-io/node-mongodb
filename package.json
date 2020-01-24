@@ -1,11 +1,12 @@
 {
   "name": "@splytech-io/mongodb",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0-beta.2",
   "description": "Splyt MongoDB Client",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
   "dependencies": {
     "@splytech-io/lint": "^0.2.4",
+    "@splytech-io/utils": "^3.6.0",
     "@types/lodash": "^4.14.149",
     "@types/mongodb": "^3.3.14",
     "lodash": "^4.17.15",
@@ -33,7 +34,6 @@
     "lint:fix": "tslint --project . --fix",
     "build": "tsc",
     "prepublishOnly": "npm run lint && npm run build && npm run test",
-    "prepush": "npm run lint",
     "test": "mocha --require ts-node/register --exit 'src/*.spec.ts'"
   },
   "keywords": [

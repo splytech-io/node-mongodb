@@ -1,14 +1,15 @@
-import { FilterQuery } from 'mongodb';
+import { Utils } from '@splytech-io/utils';
+import { Cursor, FilterQuery } from 'mongodb';
 import { MongoDB } from './index';
 import { ReadPreference, Timestamp } from './mongodb';
 import { matchesFilter, throttle } from './utils';
 
-interface Cursor {
+interface ResumeToken {
   _data: string;
 }
 
 interface InsertStreamItem<T> {
-  _id: Cursor;
+  _id: ResumeToken;
   operationType: 'insert';
   clusterTime: Timestamp;
   ns: { db: string; coll: string };
@@ -28,13 +29,14 @@ interface SubscriptionParameters<T> {
 }
 
 export class CollectionInsertStream<T extends { _id: MongoDB.ObjectID }> {
-  private cursor?: Cursor;
+  private cursor?: ResumeToken;
   private status: 'started' | 'stopped' = 'stopped';
   private readonly subscriptions: Map<Function, SubscriptionParameters<T>> = new Map();
-  private watcher?: MongoDB.ChangeStream;
+  private stream?: Cursor;
 
   constructor(
     private readonly collection: MongoDB.Collection<T>,
+    private readonly readPreference?: ReadPreference,
   ) {
 
   }
@@ -63,7 +65,7 @@ export class CollectionInsertStream<T extends { _id: MongoDB.ObjectID }> {
 
     this.status = 'stopped';
     this.subscriptions.clear();
-    this.watcher?.close();
+    this.stream?.close();
   }
 
   /**
@@ -158,18 +160,16 @@ export class CollectionInsertStream<T extends { _id: MongoDB.ObjectID }> {
    *
    */
   private initStream(): void {
-    const readPreference = new ReadPreference(ReadPreference.SECONDARY_PREFERRED, []);
-
-    this.watcher = this.collection.watch([{
+    this.stream = this.collection.watch([{
       $match: { 'operationType': 'insert' },
     }], {
-      readPreference,
+      readPreference: this.readPreference,
       resumeAfter: this.cursor,
-    });
+    }).stream();
 
-    this.watcher.on('change', (data: InsertStreamItem<T>) => this.deliver(data));
-    this.watcher.on('error', console.error.bind(console, this.constructor.name));
-    this.watcher.on('close', () => {
+    this.stream.pipe(Utils.callbackStream<InsertStreamItem<T>>(this.deliver.bind(this)));
+    this.stream.on('error', console.error.bind(console, this.constructor.name));
+    this.stream.on('close', () => {
       if (this.status === 'started') {
         setTimeout(() => this.initStream(), 500);
       }
