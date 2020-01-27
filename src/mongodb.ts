@@ -277,7 +277,7 @@ export namespace Code {
 }
 
 interface CollectionIndex {
-  collection: Collection;
+  collection: Collection<any>;
   index: Index;
 }
 
@@ -289,30 +289,12 @@ export interface Index {
 export interface CollectionOptions {
   collectionName: string;
   collectionOptions?: native.DbCollectionOptions;
-  indexes?: Index[];
+  indexes?: Array<Index>;
 }
 
 /* tslint:disable:max-line-length */
-export interface Collection<T = any> extends native.Collection<T> {
-  insertOne(docs: T, callback: native.MongoCallback<native.InsertOneWriteOpResult>): void;
+export interface Collection<T> extends native.Collection<T> {
 
-  insertOne(docs: T, options?: native.CollectionInsertOneOptions): Promise<native.InsertOneWriteOpResult>;
-
-  insertOne(
-    docs: T,
-    options: native.CollectionInsertOneOptions,
-    callback: native.MongoCallback<native.InsertOneWriteOpResult>,
-  ): void;
-
-  insertMany(docs: T[], callback: native.MongoCallback<native.InsertWriteOpResult>): void;
-
-  insertMany(docs: T[], options?: native.CollectionInsertManyOptions): Promise<native.InsertWriteOpResult>;
-
-  insertMany(
-    docs: T[],
-    options: native.CollectionInsertManyOptions,
-    callback: native.MongoCallback<native.InsertWriteOpResult>,
-  ): void;
 }
 
 
@@ -322,8 +304,8 @@ export interface Collection<T = any> extends native.Collection<T> {
 export class Connection {
   private client?: native.MongoClient;
   private db?: native.Db;
-  private collections: { [key: string]: Collection } = {};
-  private indexes: CollectionIndex[] = [];
+  private collections: { [key: string]: Collection<any> } = {};
+  private readonly indexes: Array<CollectionIndex> = [];
 
   /**
    * Connects to the mongodb and creates indexes
@@ -332,14 +314,12 @@ export class Connection {
    * @param {native.MongoClientOptions} options
    * @returns {Promise<void>}
    */
-  async open(url: string, options?: native.MongoClientOptions): Promise<void> {
+  async open(url: string, options: native.MongoClientOptions = {}): Promise<void> {
     if (this.client) {
       throw new Error('Already connected');
     }
 
-    await native.MongoClient.connect(url, Object.assign({
-      autoReconnect: true,
-      reconnectTries: Infinity,
+    this.client = new native.MongoClient(url, Object.assign<native.MongoClientOptions, native.MongoClientOptions>({
       connectTimeoutMS: 5000,
       native_parser: true,
       ignoreUndefined: true,
@@ -347,10 +327,12 @@ export class Connection {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       appname: process.env.APP,
-    }, options)).then((mongoClient: native.MongoClient) => {
-      this.client = mongoClient;
-      this.db = mongoClient.db();
-    });
+      poolSize: 20,
+    }, options));
+
+    await this.client.connect();
+
+    this.db = this.client.db();
 
     await this.ensureIndexes();
   }
@@ -476,7 +458,7 @@ export class Connection {
         const collection = <any>this.getCollection(collectionName, collectionOptions);
 
         if (typeof collection[name] === 'function') {
-          return (...args: any[]) => collection[name](...args);
+          return (...args: Array<any>) => collection[name](...args);
         }
 
         return collection[name];
@@ -501,7 +483,7 @@ export class Connection {
    * @param {native.DbCollectionOptions} options
    * @returns {Collection}
    */
-  private getCollection(name: string, options?: native.DbCollectionOptions): Collection {
+  private getCollection<T>(name: string, options?: native.DbCollectionOptions): Collection<T> {
     if (!this.db) {
       throw new Error('not connected');
     }

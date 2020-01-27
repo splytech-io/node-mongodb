@@ -3,7 +3,7 @@ import { MongoDB } from './index';
 
 interface Schema {
   name: string;
-  regions?: string[];
+  regions?: Array<string>;
   geometry?: {
     type: 'Point';
     coordinates: [number, number];
@@ -200,8 +200,7 @@ describe('mongodb', () => {
         await collection.findOne({
           regions: 'one',
           geometry: {
-            $geoNear: {
-              $maxDistance: 50000,
+            $geoIntersects: {
               $geometry: {
                 type: 'Point',
                 coordinates: [0, 1],
