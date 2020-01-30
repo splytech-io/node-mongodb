@@ -32,21 +32,41 @@ export function matchesFilter(filter: ObjectMap<any>): (item: any) => boolean {
 
   function parseExpectation(expectation: any) {
     if (typeof expectation === 'object') {
-      if (expectation.$gt) {
+      if (expectation === null) {
+        return compareNULL();
+      }
+
+      if (expectation.hasOwnProperty('$ne')) {
+        return compareNE(expectation.$ne);
+      }
+
+      if (expectation.hasOwnProperty('$gt')) {
         return compareGT(expectation.$gt);
       }
-      if (expectation.$gte) {
+      if (expectation.hasOwnProperty('$gte')) {
         return compareGTE(expectation.$gte);
       }
-      if (expectation.$lt) {
+      if (expectation.hasOwnProperty('$lt')) {
         return compareLT(expectation.$lt);
       }
-      if (expectation.$lte) {
+      if (expectation.hasOwnProperty('$lte')) {
         return compareLTE(expectation.$lte);
       }
     }
 
     return compareEquals(expectation);
+  }
+
+  function compareNE(expectation: any): any {
+    const fn = parseExpectation(expectation);
+
+    return (actualValue: any) => !fn(actualValue);
+  }
+
+  function compareNULL() {
+    return (actualValue: any): boolean => {
+      return actualValue === undefined || actualValue === null;
+    };
   }
 
   function compareGT(expectedValue: any) {

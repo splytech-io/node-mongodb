@@ -4,39 +4,21 @@ import { MongoDB } from './index';
 import { ReadPreference, Timestamp } from './mongodb';
 import { matchesFilter, throttle } from './utils';
 
-export interface ResumeToken {
-  _data: string;
-}
-
-export interface InsertStreamItem<T> {
-  _id: ResumeToken;
-  operationType: 'insert';
-  clusterTime: Timestamp;
-  ns: { db: string; coll: string };
-  documentKey: {
-    _id: MongoDB.ObjectID;
-  };
-  fullDocument: T;
-}
-
-export interface Subscription {
-  unsubscribe: () => void;
-}
 
 interface SubscriptionParameters<T> {
   filter: (doc: T) => boolean;
   callback: (doc: T) => void;
 }
 
-export class CollectionInsertStream<T extends { _id: MongoDB.ObjectID }> {
-  private cursor?: ResumeToken;
+export class CollectionWatchStream<T extends { _id: MongoDB.ObjectID }> {
+  private cursor?: CollectionWatchStream.ResumeToken;
   private status: 'started' | 'stopped' = 'stopped';
   private readonly subscriptions: Map<Function, SubscriptionParameters<T>> = new Map();
   private stream?: Cursor;
 
   constructor(
     private readonly collection: MongoDB.Collection<T>,
-    private readonly readPreference?: ReadPreference,
+    private readonly options: CollectionWatchStream.Options = {},
   ) {
 
   }
@@ -73,7 +55,7 @@ export class CollectionInsertStream<T extends { _id: MongoDB.ObjectID }> {
    * @param {SubscriptionParameters<T>} params
    * @returns {Subscription}
    */
-  subscribe(params: SubscriptionParameters<T>): Subscription {
+  subscribe(params: SubscriptionParameters<T>): CollectionWatchStream.Subscription {
     this.subscriptions.set(params.callback, params);
 
     return {
@@ -153,11 +135,9 @@ export class CollectionInsertStream<T extends { _id: MongoDB.ObjectID }> {
 
   /**
    *
-   * @param {InsertStreamItem<T>} item
+   * @param {WatchStreamItem<T>} item
    */
-  private deliver(item: InsertStreamItem<T>): void {
-    this.cursor = item._id;
-
+  private deliver(item: CollectionWatchStream.WatchStreamItem<T>): void {
     for (const subscription of this.subscriptions.values()) {
       if (!subscription.filter(item.fullDocument)) {
         continue;
@@ -171,23 +151,68 @@ export class CollectionInsertStream<T extends { _id: MongoDB.ObjectID }> {
    *
    */
   private initStream(): void {
-    this.stream = this.collection.watch([{
-      $match: { 'operationType': 'insert' },
-    }], {
-      readPreference: this.readPreference,
-      resumeAfter: this.cursor,
-    }).stream();
+    const pipeline = [];
 
-    if (this.readPreference) {
-      this.stream.setReadPreference(this.readPreference);
+    if (this.options.operationType) {
+      if (this.options.operationType instanceof Array) {
+        pipeline.push({
+          $match: { 'operationType': { $in: this.options.operationType } },
+        });
+      } else {
+        pipeline.push({
+          $match: { 'operationType': this.options.operationType },
+        });
+      }
     }
 
-    this.stream.pipe(Utils.callbackStream<InsertStreamItem<T>>(this.deliver.bind(this)));
+    this.stream = this.collection.watch(pipeline, {
+      readPreference: this.options.readPreference,
+      resumeAfter: this.cursor,
+      fullDocument: 'updateLookup',
+    }).stream();
+
+    if (this.options.readPreference) {
+      this.stream.setReadPreference(this.options.readPreference);
+    }
+
+    this.stream.pipe(Utils.callbackStream<CollectionWatchStream.WatchStreamItem<T>>((item) => {
+      this.cursor = item._id;
+
+      return this.deliver(item);
+    }));
     this.stream.on('error', () => null);
     this.stream.on('close', () => {
       if (this.status === 'started') {
         setTimeout(() => this.initStream(), 500);
       }
     });
+  }
+}
+
+export namespace CollectionWatchStream {
+  export type OperationType = 'insert' | 'update';
+
+  export interface Options {
+    readPreference?: ReadPreference;
+    operationType?: OperationType | Array<OperationType>;
+  }
+
+  export interface ResumeToken {
+    _data: string;
+  }
+
+  export interface WatchStreamItem<T> {
+    _id: ResumeToken;
+    operationType: 'insert';
+    clusterTime: Timestamp;
+    ns: { db: string; coll: string };
+    documentKey: {
+      _id: MongoDB.ObjectID;
+    };
+    fullDocument: T;
+  }
+
+  export interface Subscription {
+    unsubscribe: () => void;
   }
 }

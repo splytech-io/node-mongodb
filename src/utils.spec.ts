@@ -137,5 +137,34 @@ describe('utils', () => {
         expect(result).to.equals(true);
       });
     });
+    describe('null comparison', () => {
+      it('should compare to null = false', async () => {
+        const result = matchesFilter({
+          name: null,
+        })({
+          name: 'name',
+        });
+
+        expect(result).to.equals(false);
+      });
+      it('should compare to null = true', async () => {
+        const result = matchesFilter({
+          name: null,
+        })({});
+
+        expect(result).to.equals(true);
+      });
+    });
+    describe('$ne', () => {
+      it('should compare to null = true', async () => {
+        const result = matchesFilter({
+          name: { $ne: null },
+        })({
+          name: 'name',
+        });
+
+        expect(result).to.equals(true);
+      });
+    });
   });
 });

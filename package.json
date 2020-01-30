@@ -1,6 +1,6 @@
 {
   "name": "@splytech-io/mongodb",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Splyt MongoDB Client",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
@@ -8,7 +8,7 @@
     "@splytech-io/lint": "^0.2.4",
     "@splytech-io/utils": "^3.6.1",
     "@types/lodash": "^4.14.149",
-    "@types/mongodb": "^3.3.14",
+    "@types/mongodb": "^3.3.15",
     "lodash": "^4.17.15",
     "mongodb": "^3.5.2"
   },
@@ -16,7 +16,7 @@
     "@types/chai": "^4.2.7",
     "@types/koa": "^2.11.0",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^13.5.0",
+    "@types/node": "^13.5.1",
     "@types/sinon": "^7.5.1",
     "chai": "^4.2.0",
     "husky": "^4.2.1",
