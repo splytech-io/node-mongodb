@@ -15,7 +15,7 @@ interface Schema2 {
 }
 
 const collection = MongoDB.connection.createCollection<Schema>({
-  collectionName: 'tests',
+  collectionName: 'tests7',
 });
 
 describe('mongodb', () => {
@@ -131,7 +131,7 @@ describe('mongodb', () => {
   });
 
   it('should return collectionName', async () => {
-    expect(collection.collectionName).to.equals('tests');
+    expect(collection.collectionName).to.equals('tests7');
   });
 
   describe('transactions', () => {
