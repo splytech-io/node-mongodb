@@ -1,4 +1,5 @@
 import * as native from 'mongodb';
+import { createWatchOperationTracker } from './watch-operation-tracker';
 
 export * from 'mongodb';
 
@@ -274,6 +275,9 @@ export namespace Code {
   export const STALE_CONFIG = 13388;
   export const DATABASE_DIFFER_CASE = 13297;
   export const OBSOLETE_PREPARE_CONFIGS_FAILED = 13104;
+
+  // my errors which I couldn't find anywhere in the lib
+  export const RESULTING_DOCUMENT_AFTER_UPDATE_IS_LARGER_THAN_16777216 = 17419;
 }
 
 interface CollectionIndex {
@@ -387,6 +391,7 @@ export class Connection {
    */
   createCollection<T>(options: CollectionOptions): Collection<T> {
     const { collectionName, collectionOptions } = options;
+    const watchOperationWatcher = createWatchOperationTracker(collectionName);
 
     const proxy: any = new Proxy({}, {
 
@@ -458,7 +463,16 @@ export class Connection {
         const collection = <any>this.getCollection(collectionName, collectionOptions);
 
         if (typeof collection[name] === 'function') {
-          return (...args: Array<any>) => collection[name](...args);
+
+          return (...args: Array<any>) => {
+            const result = collection[name](...args);
+
+            if (name === 'watch') {
+              watchOperationWatcher(result);
+            }
+
+            return result;
+          };
         }
 
         return collection[name];

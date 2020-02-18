@@ -1,6 +1,8 @@
+import { Utils } from '@splytech-io/utils';
 import { expect } from 'chai';
 import { CollectionWatchStream } from './collection-watch-stream';
 import { MongoDB } from './index';
+import sinon = require('sinon');
 
 describe('collection watch stream', () => {
   it('should deliver inserts only', async () => {
@@ -110,5 +112,30 @@ describe('collection watch stream', () => {
     await new Promise((r) => setTimeout(r, 100));
 
     expect(buffer.length).to.equals(3);
+  });
+  it('should warn about overuse of watch operations', async () => {
+    const warnStub = sinon.stub(console, 'warn');
+
+    const connection = new MongoDB.Connection();
+    const collection = connection.createCollection<any>({
+      collectionName: 'test',
+    });
+
+    await connection.open('mongodb://127.0.0.1:27017/test');
+
+    const cursor1 = collection.watch([]).stream();
+    const cursor2 = collection.watch([]).stream();
+
+    cursor1.pipe(Utils.callbackStream(() => void 0));
+    cursor2.pipe(Utils.callbackStream(() => void 0));
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000);
+    });
+
+    await connection.close();
+
+    expect(warnStub.callCount).to.equals(1);
+    expect(warnStub.getCall(0).args[0]).to.match(/number of watch operations/);
   });
 });
