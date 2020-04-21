@@ -6,9 +6,9 @@
   "typings": "build/index.d.ts",
   "dependencies": {
     "@splytech-io/utils": "^3.8.6",
-    "@types/mongodb": "^3.5.3",
+    "@types/mongodb": "^3.5.8",
     "lodash.get": "^4.4.2",
-    "mongodb": "^3.5.5"
+    "mongodb": "^3.5.6"
   },
   "devDependencies": {
     "@splytech-io/lint": "^1.0.1",
