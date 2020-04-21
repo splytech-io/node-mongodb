@@ -1,5 +1,5 @@
 import { ObjectMap } from './types';
-import _ = require('lodash');
+import get = require('lodash.get');
 
 
 export function throttle(fn: () => Promise<void>): () => void {
@@ -24,7 +24,7 @@ export function matchesFilter(filter: ObjectMap<any>): (item: any) => boolean {
   return (item: any): boolean => {
     return Object.entries(filter).every(([key, expectation]) => {
       const comparator = parseExpectation(expectation);
-      const actualValue: any = _.get(item, key);
+      const actualValue: any = get(item, key);
 
       return comparator(actualValue);
     });
